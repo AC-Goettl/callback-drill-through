@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Callbacks &amp; Warranty — Branch Drill-Through</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@500;700;900&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--dark-blue:#003963;--navy:#000426;--med-blue:#3678A0;--light-blue:#77B2D0;--red:#CD1E1F;--gray:#C0B8B6;--paper:#f4f7fa;--card:#fff;--ink:#0d2438;--muted:#5b7186;--line:#dbe4ec;--grad:linear-gradient(135deg,#77B2D0 0%,#3678A0 50%,#003963 100%);--shadow:0 6px 20px rgba(0,57,99,.10)}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:"Montserrat",-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.4;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px 56px}
+header{background:var(--grad);color:#fff;padding:30px 0 26px;box-shadow:var(--shadow)}
+.head-inner{max-width:1080px;margin:0 auto;padding:0 20px;display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap}
+h1{font-family:"Roboto Slab",Georgia,serif;font-weight:900;font-size:29px;line-height:1.1;margin:0;letter-spacing:-.4px}
+.sub{margin:7px 0 0;font-size:14px;color:#dcecf6;font-weight:500}
+.badge{font-size:12px;font-weight:700;color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:7px 12px;white-space:nowrap}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 14px}
+.tab{font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;background:var(--card);color:var(--dark-blue);border:1px solid var(--line);border-radius:8px;padding:9px 14px}
+.tab:hover{border-color:var(--med-blue)}.tab[aria-selected="true"]{background:var(--dark-blue);color:#fff;border-color:var(--dark-blue)}
+.tab.company[aria-selected="true"]{background:var(--navy);border-color:var(--navy)}
+.filters{display:flex;flex-wrap:nowrap;gap:10px;align-items:flex-end;margin-bottom:18px}
+.fl{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}.fl[hidden]{display:none}
+.fl span{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.04em}
+.fl select{font-family:inherit;font-size:13px;font-weight:600;color:var(--dark-blue);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 10px;box-shadow:var(--shadow);cursor:pointer;width:100%}
+.fl select:disabled{opacity:.5;cursor:default}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px;gap:3px;box-shadow:var(--shadow);flex-wrap:wrap}
+.seg .lab{font-size:10.5px;font-weight:700;color:var(--muted);align-self:center;padding:0 6px 0 4px;letter-spacing:.03em}
+.seg button{font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);border-radius:7px;padding:7px 12px}
+.seg button[aria-selected="true"]{background:var(--dark-blue);color:#fff}
+.clearall{font-family:inherit;font-size:12px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;flex:none;white-space:nowrap;align-self:flex-end;padding-bottom:9px}
+.insight{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:10px;padding:14px 16px;margin:16px 0 18px;box-shadow:var(--shadow);font-size:14.5px;font-weight:500}
+.insight b{color:var(--dark-blue)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 16px;box-shadow:var(--shadow)}
+.kpi .lab{font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.kpi .big{font-family:"Roboto Slab",Georgia,serif;font-weight:700;font-size:28px;color:var(--dark-blue);line-height:1}
+.kpi .big small{font-size:14px;font-weight:600;color:var(--muted)}
+.kpi .cmp{font-size:12px;font-weight:600;margin-top:7px;color:var(--muted)}
+.split-bar{display:flex;height:8px;border-radius:5px;overflow:hidden;margin-top:9px;background:var(--line)}.split-bar i{display:block;height:100%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:var(--shadow)}
+.panel.full{margin-top:16px}
+.panel h2{font-family:"Roboto Slab",Georgia,serif;font-size:16px;font-weight:700;color:var(--dark-blue);margin:0 0 3px}
+.panel .hint{font-size:12.5px;color:var(--muted);margin:0 0 14px;font-weight:500}
+.row{margin-bottom:11px}.row:last-child{margin-bottom:0}
+.row.click{cursor:pointer;border-radius:8px;padding:5px 7px;margin:0 -7px 5px}
+.row.click:hover{background:var(--paper)}.row.sel{background:#eaf2f8}
+.row .rl{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:5px}
+.row .rl .rv{color:var(--dark-blue)}.row .rl .rv span{color:var(--muted)}
+.track{height:13px;background:var(--paper);border-radius:7px;overflow:hidden}.row.click .track{background:#fff}
+.track i{display:block;height:100%;border-radius:7px}
+.c-labor{background:var(--red)}.c-equip{background:var(--med-blue)}.c-both{background:var(--dark-blue)}.c-none{background:var(--gray)}.c-issue{background:var(--med-blue)}
+.vchart{margin-top:4px}
+.vplot{display:flex;align-items:flex-end;justify-content:space-around;gap:8px;height:230px;border-bottom:2px solid var(--line);padding:0 4px}
+.vgroup{display:flex;flex-direction:column;align-items:center;flex:1;height:100%;justify-content:flex-end}
+.vbars{display:flex;align-items:flex-end;justify-content:center;gap:6px;height:100%;width:100%}
+.vbar{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;flex:1;max-width:40px;height:100%;cursor:pointer}
+.vbar .vval{font-size:10.5px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.vbar i{display:block;width:100%;border-radius:4px 4px 0 0;min-height:2px;transition:opacity .12s}
+.vbar.dim i{opacity:.28}
+.b-inst{background:var(--dark-blue)}.b-svc{background:var(--red)}.b-svc-inst{background:#e8817f;border-bottom:2px solid var(--card)}.b-unlink{background:var(--gray)}
+.vglabel{font-size:11.5px;font-weight:700;color:var(--dark-blue);margin-top:8px;text-align:center;line-height:1.25;min-height:30px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;font-size:12px;font-weight:600;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.mq .num{font-family:"Roboto Slab",Georgia,serif;font-weight:900;font-size:36px;color:var(--red);line-height:1}
+.mq .txt{font-size:13px;font-weight:500;margin-top:6px}.mq .txt b{color:var(--dark-blue)}
+.rcol{display:flex;flex-direction:column;gap:16px}
+.drvhead{font-family:"Roboto Slab",Georgia,serif;font-size:16px;font-weight:700;color:var(--dark-blue);margin:2px 0 4px}
+.drvsub{font-size:12.5px;color:var(--muted);font-weight:500;margin:0 0 12px}
+.drvwrap{margin-top:16px}
+.dgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.dgrid3 .drv{padding:12px 12px}
+.dgrid3 .drv .lab{font-size:10px}
+.dgrid3 .drv .big{font-size:23px}
+.dgrid3 .drv .dv{font-size:12.5px}
+.dgrid3 .drv .cmp{font-size:11px}
+.drv{cursor:pointer;transition:border-color .1s,background .1s}
+.drv:hover{border-color:var(--med-blue)}
+.drv.sel{background:#eaf2f8;border-color:var(--dark-blue)}
+.drv.nofilter{cursor:default}.drv.nofilter:hover{border-color:var(--line)}
+.drv .dv{font-size:13px;font-weight:700;color:var(--dark-blue);margin-top:3px}
+.tab.star{border-color:var(--red);color:var(--red)}.tab.star[aria-selected="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.stbl{width:100%;border-collapse:collapse;font-size:13px}.stbl th{font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-align:right;padding:6px 8px;border-bottom:2px solid var(--line)}
+.stbl th:first-child,.stbl td:first-child{text-align:left}.stbl td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:right;font-weight:600}.stbl td b{color:var(--dark-blue)}
+.stbl tr.hi td{background:#fdf0f0}.stbl tr.tot td{border-top:2px solid var(--line);border-bottom:none;font-weight:700;color:var(--dark-blue)}.tblwrap{overflow-x:auto}
+.b-rate{background:var(--dark-blue)}.b-rate.hi{background:var(--red)}.b-rate.pt{background:var(--gray)}
+.hm td{text-align:center!important;font-weight:700;cursor:pointer}.hm td small{display:block;font-size:10px;font-weight:600;color:var(--muted)}.hm tr.selrow td{box-shadow:inset 0 2px 0 var(--dark-blue),inset 0 -2px 0 var(--dark-blue)}.hm td.thin{color:var(--muted);font-weight:500;font-style:italic}.hm td:first-child{text-align:left!important}
+.coline{border-top:2px dashed var(--red);position:relative;margin:0 4px}
+footer{margin-top:22px;font-size:11.5px;color:var(--muted);line-height:1.55}footer b{color:var(--dark-blue)}
+.defs{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-top:6px}.defs p{margin:0 0 7px}.defs p:last-child{margin:0}
+@media(max-width:760px){.dgrid3{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}h1{font-size:23px}.vglabel{font-size:10.5px}}
+</style></head><body><header><div class="head-inner"><div><h1>Callbacks &amp; Warranty — Branch Drill-Through</h1><p style="margin:5px 0 0;font:500 14px/1.3 system-ui,Arial;color:rgba(255,255,255,.72)">2026 YTD through Sept 30</p></div></div></header>
+<div class="wrap">
+<div class="tabs" id="tabs" role="tablist"></div>
+<div class="filters">
+  <label class="fl" id="fl-sbr" hidden><span>BRANCH</span><select id="sbrsel"></select></label>
+  <label class="fl" id="fl-cause"><span>CAUSE</span><select id="causesel"></select></label>
+  <label class="fl" id="fl-src"><span>SOURCE</span><select id="srcsel"></select></label>
+  <label class="fl"><span>SOURCE AGE</span><select id="agesel"></select></label>
+  <button class="clearall" id="clearall">clear</button>
+</div>
+<div id="mainview"><div class="insight" id="insight"></div>
+<div class="kpis" id="kpis"></div>
+<div class="grid2"><div class="panel" id="cause"></div><div class="rcol"><div class="panel mq" id="mq"></div><div id="drivers"></div></div></div>
+<div class="panel full" id="source"></div></div>
+<div id="starview" hidden><div class="insight" id="st-insight"></div><div class="kpis" id="st-kpis"></div><div class="panel full" id="st-chart"></div><div class="panel full" id="st-table"></div></div>
+<footer><div class="defs">
+<p><b>How to read this.</b> HVAC non-revenue recalls (Callback + Warranty) with <b>no revenue on the recall</b> — revenue-generating recall jobs are excluded — completed Jan 1 to Sep 30, 2026. Pick a branch, then stack filters: cause, specific issue, source type, and source age. Everything, including MQ Check-out, recomputes for what's in view.</p>
+<p><b>Recall rate (KPIs).</b> Install = the <b>share of 2026 installs that generated at least one recall</b> (distinct recalled installs ÷ 2026 installs). <b>Install</b> = system replacements (sold star SKU) plus duct, insulation, mini-split and partial installs. <b>Service</b> = Demand/Maintenance <b>plus H-Install Parts and Clean/Seal/IAQ jobs</b> — part-swaps behave like repairs, not replacements. Each job counts once even if it came back more than once. Branch-level; these KPIs do not change with the cause/source filters, and being year-to-date they undercount later-in-the-year installs.</p>
+<p><b>Cause &amp; issue.</b> From Recall Issue Type (Labor / Equipment / Both). Tap a cause, then a specific issue to drill. No-Fault callbacks within 120 days of the source were reclassed to Workmanship.</p>
+<p><b>Source &amp; age.</b> Each recall is traced to its source job. Source age = days from that job to the recall. On the chart, the Service bar is split into <b>technician</b> (Demand/Maintenance source) and <b>installer</b> (Install Parts / non-star install source) so you can see how much service volume is really part-swap work. Tap a chart bar to filter to that source + age.</p>
+<p><b>MQ Check-out.</b> Share of the <b>linked</b> recalls in view whose source job has an MQ vitals (check-out) score on file. Unlinked recalls have no source, so they're excluded from this rate.</p>
+<p><b>Star rating tab.</b> Counts <b>installed systems</b> (not jobs), so a job that drops two systems counts twice and a job with two different star tiers is split across them. 2026 star systems = HVAC Install jobs completed Jan 1–Sep 20 in active branches, exploded to systems: each full-system SKU is one system at its star; a matched outdoor + indoor pair (AC/condenser + furnace/air handler) is one system at the higher of the two stars; leftover single components and condenser + coil swaps are <b>Partial</b>. A system is <b>recalled</b> if a linked recall is attributed to it (two-tier linking). Each recall is attributed to <b>one</b> system on its source job: a home with two systems and a single callback counts one recalled system, and only a second, separate callback flags the second — so one recall is never counted twice. Rate = recalled ÷ installed systems. Each recalled system carries the cause and age band of its callback (earliest first), so Cause and Age partition the recalled total rather than overlapping — Labor + Equipment + Both falls short of All only by the Not-classified systems, and each system sits in exactly one age band. The Branch filter narrows to one branch (default Company = all branches); tiers under 20 systems are dropped from the high/low call-out. System total ties the RvR mix (3,769 vs RvR 3,761); 3★ is the tier where the tiering rule differs most.</p>
+<p>Source: Databricks GEL Core Model · cross-checked to the Power BI <b>Recalls</b> dashboard.</p>
+</div></footer></div>
+<script>
+const DATA={"Company":{"t":6016,"la":3421,"eq":2279,"bo":93,"nc":223,"ncArr":[41,20,22,5,48,16,6,4,9,1,1,1,49,8,3,9,0,5,5,1,0,223],"inst":5330,"svc":47237,"instRec":1100,"svcRec":1494,"cause":{"All":[1303,467,853,566,990,229,138,54,329,44,29,14,1000,715,248,366,93,494,98,43,4,6016],"Labor":[819,268,431,222,698,125,70,25,201,22,16,5,519,452,141,168,25,347,54,20,1,3421],"Equipment":[411,171,388,331,232,86,62,24,113,21,12,8,420,239,99,181,68,134,38,22,3,2279],"Both":[32,8,12,8,12,2,0,1,6,0,0,0,12,16,5,8,0,8,1,0,0,93]},"issues":{"Labor":[["Airflow/Duct",[153,40,64,41,158,24,17,6,50,5,2,2,95,84,22,23,9,75,8,3,0,657]],["Reconnection/Workmanship",[190,45,22,8,175,17,3,0,49,4,1,0,137,115,24,6,2,66,7,0,0,651]],["Condensate",[146,53,71,36,152,38,18,0,26,3,1,1,87,87,31,33,1,94,17,6,0,632]],["Other",[121,41,45,27,73,15,7,0,27,0,2,1,64,54,17,17,3,36,9,3,0,423]],["Refrigerant",[98,30,58,32,62,5,7,8,31,2,2,0,48,47,13,23,1,42,4,5,0,383]],["Electrical/Controls",[111,29,43,20,79,4,3,2,17,3,2,0,57,65,16,15,3,34,1,0,0,370]],["No-Fault/Misdiagnosis",[0,30,128,59,0,22,15,9,0,5,6,0,30,0,18,51,6,0,8,3,1,304]]],"Equipment":[["Electrical/Controls",[101,44,110,102,90,25,17,9,39,6,5,2,139,57,27,47,19,57,11,3,1,689]],["Other/Noise/RGO",[147,51,78,61,54,24,17,5,27,11,3,3,108,93,28,41,15,27,13,6,1,589]],["Refrigerant & TXV",[76,24,79,64,26,9,11,3,16,2,3,2,65,48,17,38,11,18,2,5,0,380]],["Safety Controls",[50,18,54,33,20,13,6,2,9,1,0,0,38,26,9,31,7,11,6,2,0,244]],["Compressor",[23,26,40,41,14,9,5,5,13,1,1,0,36,10,14,14,7,8,3,1,1,214]],["Motors",[13,8,24,23,28,3,6,0,8,0,0,1,27,4,4,7,6,12,2,5,0,141]],["Condensate",[1,0,3,7,0,3,0,0,1,0,0,0,7,1,0,3,3,1,1,0,0,22]]],"Both":[["E· Other/Noise/RGO",[21,5,2,6,4,1,0,0,2,0,0,0,5,9,4,1,0,4,1,0,0,46]],["L· Reconnection/Workmanship",[15,4,1,2,4,1,0,0,2,0,0,0,8,7,3,0,0,2,0,0,0,37]],["E· Electrical/Controls",[3,1,2,1,6,1,0,1,1,0,0,0,4,3,0,2,0,4,0,0,0,20]],["L· Airflow/Duct",[5,0,1,1,5,0,0,0,0,0,0,0,1,5,0,1,0,3,0,0,0,13]],["L· No-Fault/Misdiagnosis",[0,2,4,4,0,1,0,0,0,0,0,0,0,0,1,2,0,0,1,0,0,11]],["E· Safety Controls",[2,1,4,1,1,0,0,0,2,0,0,0,0,0,0,4,0,0,0,0,0,11]],["L· Other",[3,0,1,1,2,0,0,1,1,0,0,0,1,1,0,0,0,2,0,0,0,10]],["L· Condensate",[3,1,4,0,0,0,0,0,1,0,0,0,1,2,0,4,0,0,0,0,0,10]],["E· Refrigerant & TXV",[4,1,3,0,0,0,0,0,1,0,0,0,1,3,1,1,0,0,0,0,0,10]],["L· Refrigerant",[2,1,1,0,0,0,0,0,1,0,0,0,1,1,1,1,0,0,0,0,0,6]],["L· Electrical/Controls",[4,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,6]],["E· Motors",[1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,3]],["E· Compressor",[1,0,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,3]]]}},"Austin":{"t":358,"la":271,"eq":85,"bo":1,"nc":1,"ncArr":[1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],"inst":430,"svc":3761,"instRec":86,"svcRec":101,"cause":{"All":[105,41,52,23,76,10,4,1,19,0,1,0,26,52,19,16,4,36,5,0,0,358],"Labor":[76,31,28,14,69,8,3,1,17,0,1,0,23,40,12,7,3,32,5,0,0,271],"Equipment":[28,10,24,9,6,2,1,0,2,0,0,0,3,11,7,9,1,3,0,0,0,85],"Both":[0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1]},"issues":{"Labor":[["Other",[27,6,6,1,12,4,0,0,3,0,1,0,5,16,3,1,0,5,3,0,0,65]],["Condensate",[22,12,9,1,16,0,1,0,0,0,0,0,3,11,2,3,0,9,0,0,0,64]],["Refrigerant",[13,7,2,2,23,0,0,0,4,0,0,0,2,5,2,1,0,10,0,0,0,53]],["Airflow/Duct",[7,2,7,6,2,1,1,1,8,0,0,0,7,4,1,0,2,1,0,0,0,42]],["Electrical/Controls",[5,3,3,2,5,1,0,0,0,0,0,0,4,2,3,1,1,1,1,0,0,23]],["Reconnection/Workmanship",[2,0,0,1,11,2,1,0,1,0,0,0,2,2,0,0,0,5,1,0,0,20]],["No-Fault/Misdiagnosis",[0,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,3]]],"Equipment":[["Refrigerant & TXV",[10,0,8,5,0,1,1,0,0,0,0,0,0,5,0,3,0,0,0,0,0,25]],["Electrical/Controls",[7,4,7,1,5,0,0,0,0,0,0,0,1,2,3,2,1,3,0,0,0,25]],["Safety Controls",[5,3,4,3,0,1,0,0,1,0,0,0,2,2,2,3,0,0,0,0,0,19]],["Other/Noise/RGO",[5,1,3,0,0,0,0,0,0,0,0,0,0,2,1,1,0,0,0,0,0,9]],["Motors",[1,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4]],["Compressor",[0,2,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,3]]],"Both":[["L· Other",[0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1]],["E· Electrical/Controls",[0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1]]]}},"Las Vegas":{"t":1576,"la":834,"eq":668,"bo":57,"nc":17,"ncArr":[6,2,2,0,3,0,0,1,0,0,0,0,3,0,1,0,0,0,0,0,0,17],"inst":1554,"svc":10896,"instRec":308,"svcRec":357,"cause":{"All":[387,111,174,112,241,65,37,27,64,12,6,1,339,214,46,21,1,83,14,9,0,1576],"Labor":[222,53,81,34,148,39,17,14,36,6,4,0,180,120,19,5,0,42,8,4,0,834],"Equipment":[137,50,87,71,85,24,20,11,24,6,2,1,150,84,22,15,1,37,5,5,0,668],"Both":[22,6,4,7,5,2,0,1,4,0,0,0,6,10,4,1,0,4,1,0,0,57]},"issues":{"Labor":[["Reconnection/Workmanship",[64,15,10,3,63,7,1,0,16,2,1,0,63,35,4,0,0,11,2,0,0,245]],["Airflow/Duct",[31,9,12,6,30,13,2,1,4,0,0,0,35,18,2,0,0,9,3,0,0,143]],["Electrical/Controls",[51,3,7,5,12,1,1,0,2,1,0,0,21,28,2,1,0,5,0,0,0,104]],["Other",[28,9,5,4,21,3,3,0,3,0,1,0,20,11,3,0,0,4,0,0,0,97]],["Refrigerant",[22,6,11,6,12,1,3,6,5,0,1,0,18,11,3,1,0,6,0,2,0,91]],["No-Fault/Misdiagnosis",[0,9,30,5,0,11,5,7,0,1,1,0,12,0,4,2,0,0,2,2,0,81]],["Condensate",[26,2,6,5,10,3,2,0,6,2,0,0,11,17,1,1,0,7,1,0,0,73]]],"Equipment":[["Electrical/Controls",[27,10,24,16,29,10,7,2,9,0,1,1,53,15,4,4,0,16,1,0,0,189]],["Other/Noise/RGO",[59,19,13,14,22,6,3,3,4,5,1,0,35,41,6,3,0,7,1,1,0,184]],["Refrigerant & TXV",[20,4,19,15,6,5,6,3,6,1,0,0,26,11,2,6,0,5,2,3,0,111]],["Compressor",[10,13,13,10,6,1,2,2,3,0,0,0,15,5,8,1,0,2,0,0,0,75]],["Safety Controls",[16,2,7,7,6,2,1,1,2,0,0,0,10,9,1,0,0,2,1,0,0,54]],["Motors",[5,2,11,9,16,0,1,0,0,0,0,0,10,3,1,1,1,5,0,1,0,54]],["Condensate",[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1]]],"Both":[["E· Other/Noise/RGO",[16,5,1,6,2,1,0,0,2,0,0,0,3,6,4,0,0,2,1,0,0,36]],["L· Reconnection/Workmanship",[14,4,1,2,3,1,0,0,2,0,0,0,5,7,3,0,0,2,0,0,0,32]],["E· Electrical/Controls",[2,1,1,1,3,1,0,1,0,0,0,0,2,2,0,1,0,2,0,0,0,12]],["L· No-Fault/Misdiagnosis",[0,2,3,3,0,1,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,9]],["L· Other",[2,0,0,1,0,0,0,1,1,0,0,0,1,1,0,0,0,1,0,0,0,6]],["E· Refrigerant & TXV",[3,0,2,0,0,0,0,0,1,0,0,0,0,2,0,0,0,0,0,0,0,6]],["L· Airflow/Duct",[2,0,0,1,2,0,0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,5]],["L· Refrigerant",[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2]],["L· Electrical/Controls",[2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2]],["E· Safety Controls",[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,2]],["L· Condensate",[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]],["E· Motors",[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1]]]}},"Phoenix":{"t":1638,"la":839,"eq":751,"bo":28,"nc":20,"ncArr":[1,1,5,0,4,2,1,0,1,0,1,0,4,1,0,3,0,2,2,1,0,20],"inst":1279,"svc":10946,"instRec":281,"svcRec":431,"cause":{"All":[338,109,218,137,241,64,45,10,131,14,13,8,310,195,79,117,42,159,40,23,3,1638],"Labor":[218,54,94,45,155,26,20,4,71,6,4,4,138,123,41,42,8,92,15,7,1,839],"Equipment":[112,53,112,92,77,36,24,6,57,8,8,4,162,66,37,66,34,62,23,15,2,751],"Both":[7,1,7,0,5,0,0,0,2,0,0,0,6,5,1,6,0,3,0,0,0,28]},"issues":{"Labor":[["Airflow/Duct",[60,9,6,5,34,4,5,1,16,1,0,1,22,34,6,3,2,19,2,2,0,164]],["Reconnection/Workmanship",[45,10,3,1,40,5,0,0,16,1,0,0,37,26,8,2,0,23,3,0,0,158]],["Condensate",[27,15,17,11,29,2,4,0,4,0,0,1,28,17,13,7,1,15,2,1,0,138]],["Refrigerant",[38,2,14,3,11,4,1,1,15,0,1,1,15,19,2,5,0,13,3,1,0,106]],["Electrical/Controls",[24,7,13,1,27,1,1,1,7,2,1,0,17,17,5,5,0,10,0,0,0,102]],["No-Fault/Misdiagnosis",[0,6,38,17,0,7,7,1,0,2,2,0,8,0,4,17,3,0,3,1,1,88]],["Other",[24,5,3,7,14,3,2,0,13,0,0,1,11,10,3,3,2,12,2,2,0,83]]],"Equipment":[["Other/Noise/RGO",[45,16,35,21,21,11,9,2,18,4,2,3,52,28,12,22,9,18,9,5,1,239]],["Electrical/Controls",[18,8,29,19,24,8,5,2,18,3,3,0,42,13,7,18,6,18,5,3,0,179]],["Refrigerant & TXV",[26,13,15,19,12,2,4,0,4,0,2,1,18,17,10,8,7,8,0,2,0,116]],["Safety Controls",[11,6,16,9,9,5,3,0,4,0,0,0,19,4,2,8,5,6,3,1,0,82]],["Compressor",[7,7,8,14,4,4,0,2,7,1,1,0,15,2,4,5,3,6,3,1,1,70]],["Motors",[4,3,6,4,7,3,3,0,5,0,0,0,11,1,2,2,1,5,2,3,0,46]],["Condensate",[1,0,3,6,0,3,0,0,1,0,0,0,5,1,0,3,3,1,1,0,0,19]]],"Both":[["E· Other/Noise/RGO",[4,0,1,0,2,0,0,0,0,0,0,0,2,3,0,1,0,2,0,0,0,9]],["L· Condensate",[2,0,4,0,0,0,0,0,1,0,0,0,1,2,0,4,0,0,0,0,0,8]],["L· Airflow/Duct",[2,0,1,0,3,0,0,0,0,0,0,0,1,2,0,1,0,2,0,0,0,7]],["E· Safety Controls",[1,0,4,0,1,0,0,0,1,0,0,0,0,0,0,4,0,0,0,0,0,7]],["E· Electrical/Controls",[1,0,0,0,1,0,0,0,1,0,0,0,2,1,0,0,0,1,0,0,0,5]],["L· Refrigerant",[1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,4]],["L· Electrical/Controls",[2,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,4]],["L· Reconnection/Workmanship",[0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,3]],["E· Refrigerant & TXV",[0,1,1,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,3]],["E· Compressor",[1,0,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,3]],["L· Other",[0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2]],["E· Motors",[0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]]]}},"Reno 1":{"t":223,"la":82,"eq":59,"bo":3,"nc":79,"ncArr":[16,8,10,2,12,6,4,1,3,0,0,0,17,3,1,5,0,0,0,0,0,79],"inst":280,"svc":2784,"instRec":51,"svcRec":37,"cause":{"All":[62,21,34,21,28,7,7,1,9,1,0,0,32,25,2,16,3,0,0,0,0,223],"Labor":[27,8,10,8,12,0,3,0,5,1,0,0,8,13,1,4,0,0,0,0,0,82],"Equipment":[17,4,14,11,4,1,0,0,1,0,0,0,7,8,0,7,3,0,0,0,0,59],"Both":[2,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,3]},"issues":{"Labor":[["Condensate",[12,2,1,3,1,0,1,0,0,0,0,0,3,7,0,0,0,0,0,0,0,23]],["Other",[4,1,2,1,2,0,1,0,1,0,0,0,3,1,0,2,0,0,0,0,0,15]],["Refrigerant",[4,2,3,3,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,12]],["Electrical/Controls",[3,1,1,0,4,0,0,0,2,0,0,0,1,1,0,0,0,0,0,0,0,12]],["Airflow/Duct",[3,2,2,0,3,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0,0,12]],["Reconnection/Workmanship",[1,0,0,0,2,0,1,0,1,0,0,0,1,1,0,0,0,0,0,0,0,6]],["No-Fault/Misdiagnosis",[0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2]]],"Equipment":[["Other/Noise/RGO",[9,1,5,4,0,1,0,0,0,0,0,0,4,4,0,2,0,0,0,0,0,24]],["Safety Controls",[3,1,3,2,0,0,0,0,0,0,0,0,1,1,0,3,1,0,0,0,0,10]],["Electrical/Controls",[3,2,0,1,2,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,0,10]],["Compressor",[0,0,5,2,2,0,0,0,0,0,0,0,1,0,0,1,2,0,0,0,0,10]],["Refrigerant & TXV",[2,0,1,1,0,0,0,0,0,0,0,0,0,2,0,1,0,0,0,0,0,4]],["Condensate",[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]]],"Both":[["L· Reconnection/Workmanship",[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]],["L· Condensate",[0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]],["L· Airflow/Duct",[1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1]],["E· Safety Controls",[0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]],["E· Refrigerant & TXV",[1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1]],["E· Other/Noise/RGO",[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]]]}},"Reno 2":{"t":287,"la":100,"eq":101,"bo":0,"nc":86,"ncArr":[11,9,4,3,27,4,1,2,4,1,0,1,19,1,1,0,0,2,0,0,0,86],"inst":375,"svc":3214,"instRec":36,"svcRec":59,"cause":{"All":[28,29,53,46,53,10,7,8,8,1,0,1,43,9,1,12,2,6,0,0,0,287],"Labor":[8,14,27,12,20,1,3,3,3,0,0,0,9,3,0,7,0,3,0,0,0,100],"Equipment":[9,6,22,31,6,5,3,3,1,0,0,0,15,5,0,5,2,1,0,0,0,101],"Both":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},"issues":{"Labor":[["Electrical/Controls",[1,6,4,2,7,0,0,1,1,0,0,0,2,0,0,3,0,0,0,0,0,24]],["Other",[3,3,7,1,4,1,0,0,1,0,0,0,3,1,0,0,0,2,0,0,0,23]],["Refrigerant",[1,2,11,4,1,0,1,1,0,0,0,0,1,0,0,3,0,0,0,0,0,22]],["Airflow/Duct",[1,1,2,1,6,0,1,0,1,0,0,0,1,1,0,0,0,0,0,0,0,14]],["No-Fault/Misdiagnosis",[0,1,3,3,0,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,9]],["Condensate",[2,1,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,5]],["Reconnection/Workmanship",[0,0,0,0,2,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,3]]],"Equipment":[["Electrical/Controls",[5,1,9,15,4,1,2,3,0,0,0,0,5,3,0,0,0,1,0,0,0,45]],["Refrigerant & TXV",[1,0,6,4,1,0,0,0,1,0,0,0,2,0,0,3,1,0,0,0,0,15]],["Compressor",[0,1,3,6,0,2,1,0,0,0,0,0,2,0,0,1,1,0,0,0,0,15]],["Other/Noise/RGO",[2,1,2,4,1,1,0,0,0,0,0,0,3,1,0,1,0,0,0,0,0,14]],["Safety Controls",[1,1,1,2,0,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,7]],["Motors",[0,2,1,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,5]]],"Both":[]}},"San Antonio":{"t":1360,"la":971,"eq":371,"bo":2,"nc":16,"ncArr":[5,0,1,0,2,3,0,0,1,0,0,0,4,2,0,1,0,1,2,0,0,16],"inst":993,"svc":10484,"instRec":249,"svcRec":362,"cause":{"All":[285,128,228,176,277,49,22,4,48,7,4,1,131,156,81,118,21,176,26,9,1,1360],"Labor":[213,88,139,94,237,38,16,2,38,3,4,1,98,117,54,71,9,148,19,8,0,971],"Equipment":[66,40,88,81,38,8,6,2,9,4,0,0,29,37,27,46,12,27,5,1,1,371],"Both":[1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2]},"issues":{"Labor":[["Condensate",[47,17,26,15,78,26,6,0,9,0,1,0,31,29,12,13,0,51,13,4,0,256]],["Airflow/Duct",[42,15,24,21,64,5,6,2,12,1,1,1,14,20,10,14,4,38,2,1,0,208]],["Reconnection/Workmanship",[60,18,9,3,43,2,0,0,4,0,0,0,17,38,10,4,2,20,1,0,0,156]],["Other",[25,13,17,10,19,3,1,0,4,0,0,0,14,9,6,8,0,13,3,1,0,106]],["Refrigerant",[17,11,14,13,13,0,2,0,6,1,0,0,10,8,6,9,1,10,0,2,0,87]],["Electrical/Controls",[22,7,11,7,20,1,1,0,3,0,1,0,9,13,5,2,0,16,0,0,0,82]],["No-Fault/Misdiagnosis",[0,7,38,25,0,1,0,0,0,1,1,0,3,0,5,21,2,0,0,0,0,76]]],"Equipment":[["Electrical/Controls",[30,17,24,40,20,2,1,1,2,1,0,0,15,17,11,10,7,16,2,0,1,153]],["Refrigerant & TXV",[5,6,22,14,4,0,0,0,3,1,0,0,9,3,5,10,0,5,0,0,0,64]],["Safety Controls",[12,5,20,10,5,4,1,1,1,1,0,0,2,8,4,15,1,3,2,0,0,62]],["Other/Noise/RGO",[13,9,12,8,5,2,1,0,2,1,0,0,2,8,6,6,1,2,1,0,0,55]],["Compressor",[3,3,9,4,2,0,1,0,1,0,0,0,1,1,1,5,1,0,0,0,0,24]],["Motors",[3,0,1,5,2,0,2,0,0,0,0,0,0,0,0,0,2,1,0,1,0,13]]],"Both":[["L· Other",[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]],["L· No-Fault/Misdiagnosis",[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]],["E· Safety Controls",[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]],["E· Motors",[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]]]}},"Tucson":{"t":574,"la":324,"eq":244,"bo":2,"nc":4,"ncArr":[1,0,0,0,0,1,0,0,0,0,0,0,2,0,0,0,0,0,1,0,0,4],"inst":419,"svc":5152,"instRec":89,"svcRec":147,"cause":{"All":[98,28,94,51,74,24,16,3,50,9,5,3,119,64,20,66,20,34,13,2,0,574],"Labor":[55,20,52,15,57,13,8,1,31,6,3,0,63,36,14,32,5,30,7,1,0,324],"Equipment":[42,8,41,36,16,10,8,2,19,3,2,3,54,28,6,33,15,4,5,1,0,244],"Both":[0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,2]},"issues":{"Labor":[["Airflow/Duct",[9,2,11,2,19,1,2,1,8,2,1,0,16,6,2,6,1,8,1,0,0,74]],["Condensate",[10,4,12,0,18,7,4,0,7,1,0,0,10,5,3,9,0,12,1,1,0,73]],["Reconnection/Workmanship",[18,2,0,0,13,1,0,0,11,1,0,0,17,13,2,0,0,5,0,0,0,63]],["No-Fault/Misdiagnosis",[0,6,17,7,0,3,2,0,0,1,2,0,7,0,4,9,1,0,3,0,0,45]],["Other",[10,4,5,3,1,1,0,0,2,0,0,0,8,6,2,3,1,0,1,0,0,34]],["Electrical/Controls",[5,2,4,3,4,0,0,0,2,0,0,0,3,4,1,3,2,2,0,0,0,23]],["Refrigerant",[3,0,3,0,2,0,0,0,1,1,0,0,2,2,0,2,0,3,1,0,0,12]]],"Equipment":[["Electrical/Controls",[11,2,17,10,6,4,2,1,9,2,1,1,22,6,2,13,5,3,3,0,0,88]],["Other/Noise/RGO",[14,4,8,10,5,3,4,0,3,1,0,0,12,9,3,6,5,0,2,0,0,64]],["Refrigerant & TXV",[12,1,8,6,3,1,0,0,2,0,1,1,10,10,0,7,3,0,0,0,0,45]],["Motors",[0,1,4,5,2,0,0,0,2,0,0,1,4,0,1,4,2,1,0,0,0,19]],["Compressor",[3,0,1,5,0,2,1,1,2,0,0,0,2,2,0,1,0,0,0,0,0,17]],["Safety Controls",[2,0,3,0,0,0,1,0,1,0,0,0,3,1,0,2,0,0,0,1,0,10]],["Condensate",[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1]]],"Both":[["E· Electrical/Controls",[0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,2]],["L· Reconnection/Workmanship",[0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]],["L· No-Fault/Misdiagnosis",[0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1]]]}}};
+const STAR_T=["1★","2★","3★","4★","5★","Partial"];
+const SB={"Company":[[1093,[272,225,42,5],[195,160,31,4],[100,73,24,3],[7,7,0,0]],[1044,[256,215,36,5],[182,157,21,4],[112,81,25,6],[9,7,2,0]],[553,[130,110,16,4],[92,74,15,3],[57,43,11,3],[4,3,1,0]],[299,[110,97,12,1],[76,63,11,2],[53,43,10,0],[5,3,2,0]],[142,[34,29,4,1],[19,17,1,1],[14,12,2,0],[2,1,1,0]],[497,[95,79,11,5],[64,51,10,3],[36,29,6,1],[5,4,0,1]]],"Austin":[[98,[18,14,4,0],[14,12,2,0],[4,2,2,0],[0,0,0,0]],[59,[16,14,2,0],[13,13,0,0],[6,4,2,0],[0,0,0,0]],[21,[3,3,0,0],[3,2,1,0],[1,1,0,0],[0,0,0,0]],[35,[16,15,1,0],[14,12,2,0],[4,4,0,0],[0,0,0,0]],[26,[6,6,0,0],[4,4,0,0],[2,2,0,0],[0,0,0,0]],[14,[1,1,0,0],[1,1,0,0],[1,1,0,0],[0,0,0,0]]],"Las Vegas":[[33,[14,13,1,0],[10,8,2,0],[5,4,1,0],[2,2,0,0]],[392,[100,89,11,0],[66,58,7,1],[49,39,9,1],[8,6,2,0]],[182,[29,25,3,1],[18,15,2,1],[13,9,4,0],[2,2,0,0]],[121,[36,34,2,0],[19,17,2,0],[21,18,3,0],[4,2,2,0]],[81,[18,14,3,1],[9,7,1,1],[8,7,1,0],[2,1,1,0]],[270,[61,54,5,2],[41,35,5,1],[27,23,4,0],[5,4,0,1]]],"Phoenix":[[299,[70,60,9,1],[41,36,5,0],[31,24,6,1],[4,4,0,0]],[315,[80,68,10,2],[57,51,4,2],[36,27,8,1],[1,1,0,0]],[181,[47,40,5,2],[32,27,5,0],[25,19,4,2],[2,1,1,0]],[68,[27,24,3,0],[23,19,3,1],[11,7,4,0],[1,1,0,0]],[17,[4,3,1,0],[2,2,0,0],[2,1,1,0],[0,0,0,0]],[36,[12,12,0,0],[9,9,0,0],[4,3,1,0],[0,0,0,0]]],"Reno 1":[[0,[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[0,[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[0,[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[0,[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[0,[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[5,[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]],"Reno 2":[[13,[2,2,0,0],[1,1,0,0],[1,1,0,0],[0,0,0,0]],[15,[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[17,[3,1,2,0],[1,0,1,0],[3,1,2,0],[0,0,0,0]],[8,[2,2,0,0],[0,0,0,0],[2,2,0,0],[0,0,0,0]],[4,[1,1,0,0],[1,1,0,0],[0,0,0,0],[0,0,0,0]],[143,[17,10,5,2],[10,4,5,1],[3,2,0,1],[0,0,0,0]]],"San Antonio":[[453,[126,103,21,2],[103,85,16,2],[40,25,13,2],[1,1,0,0]],[192,[45,32,12,1],[34,25,9,0],[16,8,6,2],[0,0,0,0]],[84,[30,27,3,0],[26,22,3,1],[7,7,0,0],[0,0,0,0]],[50,[22,18,4,0],[17,14,3,0],[10,8,2,0],[0,0,0,0]],[12,[5,5,0,0],[3,3,0,0],[2,2,0,0],[0,0,0,0]],[18,[4,2,1,1],[3,2,0,1],[1,0,1,0],[0,0,0,0]]],"Tucson":[[197,[42,33,7,2],[26,18,6,2],[19,17,2,0],[0,0,0,0]],[71,[15,12,1,2],[12,10,1,1],[5,3,0,2],[0,0,0,0]],[68,[18,14,3,1],[12,8,3,1],[8,6,1,1],[0,0,0,0]],[17,[7,4,2,1],[3,1,1,1],[5,4,1,0],[0,0,0,0]],[2,[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[11,[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]]};
+const SCAUSE=["All","Labor","Equipment","Both"];
+const STARTAB="Star rating";
+const COMPANY="Company";
+const ORDER=["Company","Phoenix","Tucson","Las Vegas","San Antonio","Austin","Reno 1","Reno 2"];
+const CAUSES=["All","Labor","Equipment","Both"];
+const SRCS=[["all","All"],["install","Install"],["service","Service"],["unlinked","Unlinked"]];
+const AGES=[["all","All ages"],["0","Under 90 days"],["1","90–180 days"],["2","180 days–1 year"],["3","Over 1 year"]];
+let cur={sbr:"Company",br:"Company",cause:"All",issue:null,src:"all",age:"all"};
+const pct=(n,d)=>d?(n/d*100):0;
+const f1=x=>(Math.round(x*10)/10).toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1});
+const f0=x=>Math.round(x).toLocaleString();
+// arr: 0-3 si bands,4-7 ss bands,8 un,9 si26,10 ss26,11 total,12-15 v_si bands,16-19 v_ss bands
+function nodeArr(){const d=DATA[cur.br];
+  if(cur.issue){const L=d.issues[cur.cause]||[];const f=L.find(x=>x[0]===cur.issue);if(f)return f[1];}
+  return d.cause[cur.cause];}
+function stats(a,src,age){
+  let inst=0,instV=0,svc=0,svcV=0,unl=0;
+  const bands=age==="all"?[0,1,2,3]:[+age];
+  if(src==="all"||src==="install")bands.forEach(b=>{inst+=a[b];instV+=a[13+b];});
+  if(src==="all"||src==="service")bands.forEach(b=>{svc+=a[4+b]+a[8+b];svcV+=a[17+b];});
+  if((src==="all"||src==="unlinked")&&age==="all")unl+=a[12];
+  const linked=inst+svc,vit=instV+svcV;
+  return {count:linked+unl,linked,vit};
+}
+function anyFilter(){return cur.src!=="all"||cur.age!=="all";}
+function tabs(){const el=document.getElementById("tabs");el.innerHTML="";
+  ORDER.concat([STARTAB]).forEach(n=>{const b=document.createElement("button");b.className="tab"+(n===COMPANY?" company":"")+(n===STARTAB?" star":"");b.textContent=n===STARTAB?"★ Star rating":n;
+    b.setAttribute("aria-selected",n===cur.br?"true":"false");b.onclick=()=>{if(n===STARTAB&&cur.br!==STARTAB)cur.sbr=COMPANY;cur.br=n;cur.issue=null;render();};el.appendChild(b);});}
+function segs(){
+  const opt=(v,l,sel)=>`<option value="${v}"${v===sel?" selected":""}>${l}</option>`;
+  const cs=document.getElementById("causesel");
+  cs.innerHTML=CAUSES.map(c=>opt(c,c,cur.cause)).join("");
+  cs.onchange=e=>{cur.cause=e.target.value;cur.issue=null;render();};
+  const ss=document.getElementById("srcsel");
+  ss.innerHTML=SRCS.map(([v,l])=>opt(v,l,cur.src)).join("");
+  ss.onchange=e=>{cur.src=e.target.value;if(cur.src==="unlinked")cur.age="all";render();};
+  const sb=document.getElementById("sbrsel");
+  sb.innerHTML=[COMPANY].concat(ORDER.filter(n=>n!==COMPANY)).map(n=>opt(n,n,cur.sbr)).join("");
+  sb.onchange=e=>{cur.sbr=e.target.value;render();};
+  const ag=document.getElementById("agesel");
+  ag.innerHTML=AGES.map(([v,l])=>opt(v,l,cur.age)).join("");
+  ag.disabled=(cur.src==="unlinked");
+  ag.onchange=e=>{cur.age=e.target.value;render();};
+}
+function kpis(){const d=DATA[cur.br],a=nodeArr(),co=DATA[COMPANY];const s=stats(a,cur.src,cur.age);
+  const instR=pct(d.instRec,d.inst),svcR=pct(d.svcRec,d.svc),coInst=pct(co.instRec,co.inst),coSvc=pct(co.svcRec,co.svc);
+  const isBase=cur.cause==="All"&&!cur.issue&&!anyFilter();
+  let k2;
+  if(isBase){const laP=pct(d.la,d.la+d.eq),eqP=pct(d.eq,d.la+d.eq);
+    k2=`<div class="kpi"><div class="lab">Labor / Equipment mix</div><div class="big">${f1(laP)}<small>% / ${f1(eqP)}%</small></div>
+    <div class="split-bar"><i class="c-labor" style="width:${laP}%"></i><i class="c-equip" style="width:${eqP}%"></i></div></div>`;
+  } else {k2=`<div class="kpi"><div class="lab">Share of branch recalls</div><div class="big">${f1(pct(s.count,d.t))}<small>%</small></div>
+    <div class="cmp">${f0(s.count)} of ${f0(d.t)}</div></div>`;}
+  document.getElementById("kpis").innerHTML=`
+   <div class="kpi"><div class="lab">Recalls in view</div><div class="big">${f0(s.count)}</div>
+     <div class="cmp">${anyFilter()||cur.issue||cur.cause!=="All"?"filtered":(cur.br===COMPANY?"all branches":f1(pct(d.t,co.t))+"% of company")}</div></div>
+   ${k2}
+   <div class="kpi"><div class="lab">Install recall rate</div><div class="big">${f1(instR)}<small>%</small></div>
+     <div class="cmp">${cur.br===COMPANY?f0(d.instRec)+" ÷ "+f0(d.inst)+" installs":(instR>coInst?"above":"below")+" co ("+f1(coInst)+"%)"}</div></div>
+   <div class="kpi"><div class="lab">Service recall rate</div><div class="big">${f1(svcR)}<small>%</small></div>
+     <div class="cmp">${cur.br===COMPANY?f0(d.svcRec)+" ÷ "+f0(d.svc)+" jobs":(svcR>coSvc?"above":"below")+" co ("+f1(coSvc)+"%)"}</div></div>`;}
+function bar(label,cls,val,total,click,sel){
+  const inner=`<div class="rl"><span>${label}</span><span class="rv">${f0(val)} <span>· ${f1(pct(val,total))}%</span></span></div>
+    <div class="track"><i class="${cls}" style="width:${pct(val,total)}%"></i></div>`;
+  return click?`<div class="row click${sel?' sel':''}" onclick="${click}">${inner}</div>`:`<div class="row">${inner}</div>`;}
+function causePanel(){const d=DATA[cur.br],el=document.getElementById("cause");
+  const F=a=>stats(a,cur.src,cur.age).count;
+  const fnote=anyFilter()?" · counts reflect current source":"";
+  if(cur.cause==="All"){
+    const tot=F(d.cause.All)||1;
+    el.innerHTML=`<h2>What's driving them</h2><p class="hint">Recall Issue Type · tap a cause to drill${fnote}</p>
+     ${bar("Labor","c-labor",F(d.cause.Labor),tot,"pickCause('Labor')")}
+     ${bar("Equipment","c-equip",F(d.cause.Equipment),tot,"pickCause('Equipment')")}
+     ${bar("Both","c-both",F(d.cause.Both),tot,"pickCause('Both')")}
+     ${bar("Not classified","c-none",F(d.ncArr),tot,"")}`;
+  } else {
+    const cot=F(d.cause[cur.cause])||1;
+    const L=(d.issues[cur.cause]||[]).map(x=>[x[0],F(x[1])]).sort((a,b)=>b[1]-a[1]);
+    let rows=L.map(x=>bar(x[0],"c-issue",x[1],cot,`pickIssue('${x[0].replace(/'/g,"\\'")}')`,cur.issue===x[0])).join("");
+    if(!rows||F(d.cause[cur.cause])===0)rows='<p class="hint">No recalls in this selection.</p>';
+    el.innerHTML=`<h2>${cur.cause} — specific issues</h2><p class="hint">Tap an issue to filter${fnote||" everything below"}</p>${rows}`;}}
+function mqPanel(){const a=nodeArr(),s=stats(a,cur.src,cur.age);const el=document.getElementById("mq");
+  if(s.linked===0){el.innerHTML=`<h2>MQ Check-out</h2><p class="hint">Source-job vitals on file</p>
+    <div class="num">n/a</div><div class="txt">No linked source jobs in this selection (unlinked recalls have no source to check).</div>`;return;}
+  const p=pct(s.vit,s.linked);
+  el.innerHTML=`<h2>MQ Check-out</h2><p class="hint">Vitals on file for the linked recalls in view</p>
+   <div class="num">${f1(p)}%</div>
+   <div class="txt"><b>${f0(s.vit)}</b> of <b>${f0(s.linked)}</b> linked recalls in view have an MQ check-out on the source job. The other ${f1(100-p)}% have no record it was commissioned to spec — the gap White Glove closes.</div>`;}
+function vbar(cls,val,mx,active,onclick){const h=Math.round(pct(val,mx)/100*185);
+  return `<div class="vbar${active?'':' dim'}" onclick="${onclick}"><span class="vval">${f0(val)}</span><i class="${cls}" style="height:${h}px"></i></div>`;}
+function svcbar(tech,inst,mx,active,onclick){var tot=tech+inst;var ht=Math.round(pct(tech,mx)/100*185),hi=Math.round(pct(inst,mx)/100*185);
+  return '<div class="vbar'+(active?'':' dim')+'" onclick="'+onclick+'"><span class="vval">'+f0(tot)+'</span>'+(inst>0?'<i class="b-svc-inst" style="height:'+hi+'px"></i>':'')+'<i class="b-svc" style="height:'+ht+'px"></i></div>';}
+function sourcePanel(){const a=nodeArr();
+  const mx=Math.max(a[0],a[1],a[2],a[3],a[4]+a[8],a[5]+a[9],a[6]+a[10],a[7]+a[11],a[12],1);
+  const noF=!anyFilter();
+  const instActive=b=>noF||((cur.src==="all"||cur.src==="install")&&(cur.age==="all"||+cur.age===b));
+  const svcActive=b=>noF||((cur.src==="all"||cur.src==="service")&&(cur.age==="all"||+cur.age===b));
+  const unlActive=noF||(cur.src==="unlinked"||(cur.src==="all"&&cur.age==="all"));
+  const g=(lab,b)=>`<div class="vgroup"><div class="vbars">
+     ${vbar("b-inst",a[b],mx,instActive(b),`pickCell('install',${b})`)}
+     ${svcbar(a[4+b],a[8+b],mx,svcActive(b),`pickCell('service',${b})`)}
+    </div><div class="vglabel">${lab}</div></div>`;
+  document.getElementById("source").innerHTML=`<h2>Time to fail — tap a bar to filter</h2>
+   <p class="hint">Days from source job to recall · Install vs Service (technician + installer) · Unlinked = no source</p>
+   <div class="vchart"><div class="vplot">
+   ${g("Under<br>90 days",0)}${g("90–180<br>days",1)}${g("180 days<br>–1 year",2)}${g("Over<br>1 year",3)}
+   <div class="vgroup"><div class="vbars">${vbar("b-unlink",a[12],mx,unlActive,"pickUnlinked()")}</div><div class="vglabel">Unlinked</div></div>
+   </div></div>
+   <div class="legend"><span><i class="b-inst"></i>Install</span><span><i class="b-svc"></i>Service — technician</span><span><i class="b-svc-inst"></i>Service — installer (Parts)</span><span><i class="b-unlink"></i>Unlinked</span></div>`;}
+function insight(){const d=DATA[cur.br],a=nodeArr(),co=DATA[COMPANY],s=stats(a,cur.src,cur.age);
+  const bits=[];
+  const sel=[cur.cause!=="All"?cur.cause:null,cur.issue,cur.src!=="all"?("source: "+cur.src):null,cur.age!=="all"?("age band "+cur.age):null].filter(Boolean);
+  if(cur.br===COMPANY&&sel.length===0){
+    document.getElementById("insight").innerHTML=`<b>Company view.</b> ${f0(d.t)} non-revenue recalls YTD — ${f1(pct(d.la,d.t))}% labor, ${f1(pct(d.eq,d.t))}% equipment. MQ check-out on file for ${f1(pct(s.vit,s.linked))}% of linked recalls. Filter by cause, issue, source, or age — everything recomputes.`;return;}
+  if(sel.length===0){
+    const nc=pct(d.nc,d.t);
+    if(nc>=25)bits.push(`<b>Cause tagging gap:</b> ${f1(nc)}% "Not classified".`);
+    else if(d.la>d.eq)bits.push(`<b>Workmanship-led:</b> labor ${f0(d.la)} vs equipment ${f0(d.eq)}.`);
+    else bits.push(`<b>Equipment-led:</b> equipment ${f0(d.eq)} vs labor ${f0(d.la)}.`);
+    bits.push(`MQ check-out ${f1(pct(s.vit,s.linked))}% of linked.`);
+  } else {
+    bits.push(`<b>${(cur.br===COMPANY?"":cur.br+" · ")+sel.join(" · ")}:</b> ${f0(s.count)} recalls in view.`);
+    if(s.linked>0)bits.push(`MQ check-out on ${f1(pct(s.vit,s.linked))}% of the ${f0(s.linked)} linked.`);
+  }
+  document.getElementById("insight").innerHTML=bits.join(" ");}
+window.pickCause=c=>{cur.cause=c;cur.issue=null;render();};
+window.pickIssue=n=>{cur.issue=cur.issue===n?null:n;render();};
+window.pickCell=(src,b)=>{if(cur.src===src&&cur.age===String(b)){cur.src="all";cur.age="all";}else{cur.src=src;cur.age=String(b);}render();};
+window.pickUnlinked=()=>{if(cur.src==="unlinked"){cur.src="all";cur.age="all";}else{cur.src="unlinked";cur.age="all";}render();};
+document.getElementById("clearall").onclick=()=>{cur.cause="All";cur.issue=null;cur.src="all";cur.age="all";render();};
+function driversPanel(){var d=DATA[cur.br],co=DATA[COMPANY],a=d.cause.All,ca=co.cause.All;var T=d.t||1,cT=co.t||1;
+  var srcArr=[['Install','install',a[0]+a[1]+a[2]+a[3]],['Service','service',a[4]+a[5]+a[6]+a[7]+a[8]+a[9]+a[10]+a[11]],['Unlinked','unlinked',a[12]]];
+  srcArr.sort(function(x,y){return y[2]-x[2];});
+  var cauArr=[['Labor','Labor',d.la],['Equipment','Equipment',d.eq],['Both','Both',d.bo],['Not classified',null,d.nc]];
+  cauArr.sort(function(x,y){return y[2]-x[2];});
+  var ageArr=[['Under 90 days','0',a[0]+a[4]+a[8]],['90-180 days','1',a[1]+a[5]+a[9]],['180 days-1 year','2',a[2]+a[6]+a[10]],['Over 1 year','3',a[3]+a[7]+a[11]]];
+  ageArr.sort(function(x,y){return y[2]-x[2];});
+  var cs={Install:ca[0]+ca[1]+ca[2]+ca[3],Service:ca[4]+ca[5]+ca[6]+ca[7]+ca[8]+ca[9]+ca[10]+ca[11],Unlinked:ca[12]};
+  function coCause(v){return v==='Labor'?co.la:v==='Equipment'?co.eq:v==='Both'?co.bo:co.nc;}
+  var drivers=[
+    {dim:'SOURCE',lab:srcArr[0][0],val:srcArr[0][1],kind:'src',cnt:srcArr[0][2],co:cs[srcArr[0][0]]},
+    {dim:'CAUSE',lab:cauArr[0][0],val:cauArr[0][1],kind:'cause',cnt:cauArr[0][2],co:coCause(cauArr[0][1])},
+    {dim:'TIME TO FAIL',lab:ageArr[0][0],val:ageArr[0][1],kind:'age',cnt:ageArr[0][2],co:ca[+ageArr[0][1]]+ca[+ageArr[0][1]+4]+ca[+ageArr[0][1]+8]}
+  ];
+  drivers.sort(function(x,y){return y.cnt-x.cnt;});
+  var cards=drivers.map(function(x){
+    var bp=pct(x.cnt,T),cp=pct(x.co,cT);
+    var active=(x.kind==='src'&&cur.src===x.val)||(x.kind==='cause'&&cur.cause===x.val)||(x.kind==='age'&&cur.age===x.val);
+    var clickable=x.val!==null;
+    var onc=clickable?' onclick="pickDrv(\''+x.kind+'\',\''+x.val+'\')"':'';
+    return '<div class="kpi drv'+(active?' sel':'')+(clickable?'':' nofilter')+'"'+onc+'>'+
+      '<div class="lab">'+x.dim+'</div>'+
+      '<div class="dv">'+x.lab+'</div>'+
+      '<div class="big">'+f1(bp)+'<small>%</small></div>'+
+      '<div class="cmp">'+f0(x.cnt)+' recalls'+(cur.br===COMPANY?'':' \u00b7 company '+f1(cp)+'%')+'</div></div>';
+  }).join("");
+  document.getElementById("drivers").innerHTML='<div class="drvhead">Where the volume is</div>'+
+    '<p class="drvsub">Biggest bucket in each filter \u2014 tap to focus, then drill</p><div class="dgrid3">'+cards+'</div>';}
+window.pickDrv=function(kind,val){
+  if(kind==='src'){cur.src=(cur.src===val?'all':val);if(cur.src==='unlinked')cur.age='all';}
+  else if(kind==='cause'){cur.cause=(cur.cause===val?'All':val);cur.issue=null;}
+  else if(kind==='age'){cur.age=(cur.age===val?'all':val);}
+  render();};
+function sCell(b,i){const r=SB[b][i],c=r[1+SCAUSE.indexOf(cur.cause)];return {inst:r[0],rec:cur.age==="all"?c[0]:(c[1+(+cur.age)]||0)};}
+function heat(rt,co){const d=Math.max(-1,Math.min(1,(rt-co)/Math.max(co,0.1)));
+  return d>=0?`rgba(205,30,31,${(0.06+0.45*d).toFixed(2)})`:`rgba(54,120,160,${(0.06+0.35*(-d)).toFixed(2)})`;}
+window.pickSBr=b=>{cur.sbr=(cur.sbr===b)?"Company":b;render();};
+function starView(){
+  const T=STAR_T,B=cur.sbr,ageLab=(AGES.find(a=>a[0]===cur.age)||AGES[0])[1];
+  const cells=T.map((t,i)=>sCell(B,i));
+  const inst=cells.map(c=>c.inst),rec=cells.map(c=>c.rec),rate=cells.map(c=>pct(c.rec,c.inst));
+  const ti=inst.reduce((a,b)=>a+b,0),tr=rec.reduce((a,b)=>a+b,0),co=pct(tr,ti);
+  let pool=[0,1,2,3,4].filter(i=>inst[i]>=20);if(!pool.length)pool=[0,1,2,3,4,5].filter(i=>inst[i]>0);
+  let hi=pool[0],lo=pool[0];pool.forEach(i=>{if(rate[i]>rate[hi])hi=i;if(rate[i]<rate[lo])lo=i;});
+  const causeTxt=cur.cause==="All"?"":(cur.cause==="Both"?"labor+equipment":cur.cause.toLowerCase())+" ";
+  const scope=[B==="Company"?null:B,cur.cause!=="All"?cur.cause:null,cur.age!=="all"?ageLab.toLowerCase():null].filter(Boolean).join(" · ");
+  const fnote=scope?" · "+scope:"";
+  document.getElementById("st-insight").innerHTML=(tr===0)
+    ?`<b>No ${causeTxt}recalls in this view.</b> ${cur.age==="3"?"Every 2026 install is under a year old, so none can have a recall more than a year after install.":"Try a wider filter."}`
+    :`<b>${scope?scope+": ":""}${T[hi]} runs highest</b> — ${f1(rate[hi])}% of ${T[hi]} systems had ${cur.cause==="Equipment"?"an":"a"} ${causeTxt}recall vs ${f1(co)}% across all star systems. ${T[lo]} is lowest at ${f1(rate[lo])}%${inst[5]>=20?"; Partials "+f1(rate[5])+"%":""}.${[0,1,2,3,4].some(i=>inst[i]>0&&inst[i]<20)?" Tiers under 20 systems are left out of high/low.":""}`;
+  document.getElementById("st-kpis").innerHTML=`
+   <div class="kpi"><div class="lab">Star systems (2026)</div><div class="big">${f0(ti)}</div><div class="cmp">${B==="Company"?"all branches":B} · Jan 1–Sep 20</div></div>
+   <div class="kpi"><div class="lab">Systems with ${cur.cause==="Equipment"?"an":"a"} ${causeTxt}recall</div><div class="big">${f0(tr)}</div><div class="cmp">${cur.age==="all"?"any age":ageLab.toLowerCase()}</div></div>
+   <div class="kpi"><div class="lab">${cur.cause==="All"?"Star system":cur.cause} recall rate</div><div class="big">${f1(co)}<small>%</small></div><div class="cmp">recalled ÷ installed systems</div></div>
+   <div class="kpi"><div class="lab">Highest tier</div><div class="big">${T[hi]} <small>${f1(rate[hi])}%</small></div><div class="cmp">${f0(rec[hi])} of ${f0(inst[hi])} systems</div></div>`;
+  const mx=Math.max(...rate,co,1)*1.12,H=185,coH=Math.round(co/mx*H);
+  const bars=T.map((t,i)=>{const h=Math.round(rate[i]/mx*H);const cls="b-rate"+(i===hi&&tr>0?" hi":"")+(i===5?" pt":"");const thin=inst[i]<20;
+    return `<div class="vgroup"><div class="vbars"><div class="vbar" style="max-width:58px;cursor:default${thin?';opacity:.4':''}"><span class="vval">${inst[i]?f1(rate[i])+"%":"—"}</span><i class="${cls}" style="height:${h}px"></i></div></div><div class="vglabel">${t}<br><span style="font-weight:600;color:var(--muted)">${f0(rec[i])}/${f0(inst[i])}</span></div></div>`;}).join("");
+  document.getElementById("st-chart").innerHTML=`<h2>Recall rate by star tier${fnote}</h2>
+   <p class="hint">Share of 2026 <b>systems</b> at each tier with ≥1 ${causeTxt}recall · dashed line = all star systems (${f1(co)}%) · faded = under 20 systems</p>
+   <div class="vchart" style="position:relative"><div class="vplot">${bars}</div>
+   <div style="position:absolute;left:0;right:0;bottom:${coH+2}px;pointer-events:none"><div class="coline"></div></div></div>
+   <div class="legend"><span><i class="b-rate"></i>Full system</span><span><i class="b-rate hi"></i>Highest tier</span><span><i class="b-rate pt"></i>Partial</span><span><i style="background:none;border-top:2px dashed var(--red);border-radius:0;height:0"></i>All star systems</span></div>`;
+  const ci=1+SCAUSE.indexOf(cur.cause);
+  const rows=T.map((t,i)=>`<tr${i===hi&&tr>0?' class="hi"':''}><td><b>${t}</b></td><td>${f0(inst[i])}</td><td>${f1(pct(inst[i],ti))}%</td><td>${f0(rec[i])}</td><td><b>${f1(rate[i])}%</b></td>
+    ${[0,1,2].map(b=>`<td>${f1(pct(SB[B][i][ci][1+b],inst[i]))}%</td>`).join("")}</tr>`).join("");
+  const bt=[0,1,2].map(b=>T.reduce((a,t,i)=>a+SB[B][i][ci][1+b],0));
+  document.getElementById("st-table").innerHTML=`<h2>Tier detail${fnote}</h2><p class="hint">Rate by source-age band shown across so tiers compare at each age (each system sits in the band of its callback)</p>
+   <div class="tblwrap"><table class="stbl"><thead><tr><th>TIER</th><th>SYSTEMS</th><th>MIX</th><th>RECALLED</th><th>RATE</th><th>&lt;90 D</th><th>90–180 D</th><th>180 D–1 YR</th></tr></thead>
+   <tbody>${rows}<tr class="tot"><td>All star</td><td>${f0(ti)}</td><td>100%</td><td>${f0(tr)}</td><td>${f1(co)}%</td>${bt.map(v=>`<td>${f1(pct(v,ti))}%</td>`).join("")}</tr></tbody></table></div>`;
+}
+function render(){tabs();segs();
+  const isStar=cur.br===STARTAB;
+  document.getElementById("mainview").hidden=isStar;document.getElementById("starview").hidden=!isStar;
+  document.getElementById("fl-cause").hidden=false;document.getElementById("fl-src").hidden=isStar;document.getElementById("fl-sbr").hidden=!isStar;
+  if(isStar){if(cur.src==="unlinked")cur.src="all";document.getElementById("agesel").disabled=false;starView();return;}
+  insight();kpis();causePanel();mqPanel();driversPanel();sourcePanel();}
+render();
+
+</script></body></html>
